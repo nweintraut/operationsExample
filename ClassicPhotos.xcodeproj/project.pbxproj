@@ -13,6 +13,11 @@
 		27DF647B19657AD900B42725 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 27DF647A19657AD900B42725 /* Storyboard.storyboard */; };
 		27DF647D19657B7500B42725 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DF647C19657B7500B42725 /* ListViewController.swift */; };
 		27DF647F19657EDE00B42725 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27DF647E19657EDE00B42725 /* CoreImage.framework */; };
+		28CE2F551E33CB2D0046EB16 /* RVPhotoRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE2F541E33CB2D0046EB16 /* RVPhotoRecord.swift */; };
+		28CE2F571E33CC000046EB16 /* RVPendingOperations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE2F561E33CC000046EB16 /* RVPendingOperations.swift */; };
+		28CE2F591E33CCF70046EB16 /* RVImageDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE2F581E33CCF70046EB16 /* RVImageDownloader.swift */; };
+		28CE2F5B1E33CEF00046EB16 /* RVImageFiltration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE2F5A1E33CEF00046EB16 /* RVImageFiltration.swift */; };
+		28CE2F5D1E33DA490046EB16 /* RVTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE2F5C1E33DA490046EB16 /* RVTableViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +41,11 @@
 		27DF647A19657AD900B42725 /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
 		27DF647C19657B7500B42725 /* ListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
 		27DF647E19657EDE00B42725 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
+		28CE2F541E33CB2D0046EB16 /* RVPhotoRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RVPhotoRecord.swift; sourceTree = "<group>"; };
+		28CE2F561E33CC000046EB16 /* RVPendingOperations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RVPendingOperations.swift; sourceTree = "<group>"; };
+		28CE2F581E33CCF70046EB16 /* RVImageDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RVImageDownloader.swift; sourceTree = "<group>"; };
+		28CE2F5A1E33CEF00046EB16 /* RVImageFiltration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RVImageFiltration.swift; sourceTree = "<group>"; };
+		28CE2F5C1E33DA490046EB16 /* RVTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RVTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,10 +89,12 @@
 		27DF645F19657A9300B42725 /* ClassicPhotos */ = {
 			isa = PBXGroup;
 			children = (
+				28CE2F531E33CB030046EB16 /* Operations */,
 				27DF646219657A9300B42725 /* AppDelegate.swift */,
 				27DF646419657A9300B42725 /* Images.xcassets */,
 				27DF646019657A9300B42725 /* Supporting Files */,
 				27DF647A19657AD900B42725 /* Storyboard.storyboard */,
+				28CE2F5C1E33DA490046EB16 /* RVTableViewCell.swift */,
 				27DF647C19657B7500B42725 /* ListViewController.swift */,
 			);
 			path = ClassicPhotos;
@@ -111,6 +123,17 @@
 				27DF646F19657A9300B42725 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		28CE2F531E33CB030046EB16 /* Operations */ = {
+			isa = PBXGroup;
+			children = (
+				28CE2F541E33CB2D0046EB16 /* RVPhotoRecord.swift */,
+				28CE2F561E33CC000046EB16 /* RVPendingOperations.swift */,
+				28CE2F581E33CCF70046EB16 /* RVImageDownloader.swift */,
+				28CE2F5A1E33CEF00046EB16 /* RVImageFiltration.swift */,
+			);
+			name = Operations;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -213,7 +236,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				28CE2F591E33CCF70046EB16 /* RVImageDownloader.swift in Sources */,
+				28CE2F551E33CB2D0046EB16 /* RVPhotoRecord.swift in Sources */,
+				28CE2F571E33CC000046EB16 /* RVPendingOperations.swift in Sources */,
+				28CE2F5B1E33CEF00046EB16 /* RVImageFiltration.swift in Sources */,
 				27DF647D19657B7500B42725 /* ListViewController.swift in Sources */,
+				28CE2F5D1E33DA490046EB16 /* RVTableViewCell.swift in Sources */,
 				27DF646319657A9300B42725 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

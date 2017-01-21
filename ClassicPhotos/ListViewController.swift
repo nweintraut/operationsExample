@@ -13,12 +13,54 @@ let dataSourceURL = URL(string:"http://www.raywenderlich.com/downloads/ClassicPh
 
 class ListViewController: UITableViewController {
   
-  lazy var photos = NSDictionary(contentsOf:dataSourceURL!)!
-  
-  
+ // lazy var photos = NSDictionary(contentsOf:dataSourceURL!)!
+    var photos = [RVPhotoRecord]()
+    let pendingOperations = RVPendingOperations()
+    func fetchPhotoDetails() {
+        if let url = URL(string:"http://www.raywenderlich.com/downloads/ClassicPhotosDictionary.plist") {
+            let request = URLRequest(url: url)
+            UIApplication.shared.isNetworkActivityIndicatorVisible = true
+            NSURLConnection.sendAsynchronousRequest(request, queue: OperationQueue.main, completionHandler: { (urlResponse, data: Data?, error: Error?) in
+                if let error = error {
+                    print("In \(self.classForCoder) error: \(error.localizedDescription)")
+                    return
+                } else if let data = data {
+                    do {
+                        let datasourceDictionary = try PropertyListSerialization.propertyList(from: data, options: PropertyListSerialization.ReadOptions(rawValue: 0), format: nil)
+                        if let datasourceDictionary = datasourceDictionary as? NSDictionary {
+                            for (key, value) in datasourceDictionary {
+                                if let name = key as? String {
+                                    if let urlString = value as? String {
+                                        if let url = URL(string: urlString) {
+                                            let photoRecord = RVPhotoRecord(name: name, url: url)
+                                            self.photos.append(photoRecord)
+                                        }
+                                    }
+                                }
+                            }
+                            //print("In \(self.classForCoder) after getting plist. Count is \(self.photos.count)")
+                            self.tableView.reloadData()
+                        } else {
+                            let alert = UIAlertView(title: "Oops!", message: "Plist didn't download", delegate: nil, cancelButtonTitle: "Cancel")
+                            alert.show()
+                        }
+                    } catch let error {
+                        print("In \(self.classForCoder) \(#line), got error \(error.localizedDescription)")
+                        let alert = UIAlertView(title: "Oops!", message: error.localizedDescription, delegate: nil, cancelButtonTitle: "Cancel")
+                        alert.show()
+                    }
+                } else {
+                    print("In \(self.classForCoder), line \(#line), no error no data")
+                }
+                UIApplication.shared.isNetworkActivityIndicatorVisible = false
+            })
+        }
+
+    }
   override func viewDidLoad() {
     super.viewDidLoad()
     self.title = "Classic Photos"
+    fetchPhotoDetails()
   }
   
   override func didReceiveMemoryWarning() {
@@ -33,28 +75,100 @@ class ListViewController: UITableViewController {
   }
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdentifier", for: indexPath) 
-    let rowKey = photos.allKeys[indexPath.row] as! String
-    
-    var image : UIImage?
-    if let imageURL = URL(string:photos[rowKey] as! String),
-    let imageData = try? Data(contentsOf: imageURL){
-      //1
-      let unfilteredImage = UIImage(data:imageData)
-      //2
-      image = self.applySepiaFilter(unfilteredImage!)
+    if let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdentifier", for: indexPath) as? RVTableViewCell {
+        if cell.accessoryView == nil {
+            cell.accessoryView = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+        }
+       // print("In \(self.classForCoder).cellForRow \(indexPath.row)")
+        let indicator = cell.accessoryView as! UIActivityIndicatorView
+        if indexPath.row < photos.count {
+            let photoDetails = photos[indexPath.row]
+            cell.photoRecord = photoDetails
+            photoDetails.indexPath = indexPath
+            cell.configure()
+            switch(photoDetails.state) {
+            case .Filtered:
+                indicator.stopAnimating()
+            case .Failed:
+                indicator.stopAnimating()
+                cell.textLabel?.text = "Failed to Load"
+            case .New:
+              //  indicator.startAnimating()
+                self.startOperationsForPhotoRecord(photoDetails: photoDetails, indexPath: indexPath)
+            case .Downloaded:
+              //  print("In \(self.classForCoder) photo \(photoDetails.identifier) downloaded")
+                indicator.startAnimating()
+                self.startOperationsForPhotoRecord(photoDetails: photoDetails, indexPath: indexPath)
+            }
+        }
+        return cell
+    } else {
+        print("In \(self.classForCoder). \(#line) shouldn't get here")
+        return UITableViewCell()
     }
-    
-    // Configure the cell...
-    cell.textLabel?.text = rowKey
-    if image != nil {
-      cell.imageView?.image = image!
-    }
-    
-    return cell
   }
   
-  
+    func startOperationsForPhotoRecord(photoDetails: RVPhotoRecord, indexPath: IndexPath) {
+        switch(photoDetails.state) {
+        case .New:
+            startDownloadForRecord(photoDetails: photoDetails, indexPath: indexPath)
+        case .Downloaded:
+            startFiltrationForRecord(photoDetails: photoDetails, indexPath: indexPath)
+        default:
+            print("In\(self.classForCoder).start, do nothing for row \(indexPath.row)")
+        }
+        
+    }
+    func startDownloadForRecord(photoDetails: RVPhotoRecord, indexPath: IndexPath) {
+
+               // print("In \(self.classForCoder).startDownload for \(indexPath.row) and Identifier: \(photoDetails.identifier)")
+                if let _ = pendingOperations.downloadsInProgress[photoDetails.identifier] {
+                    print("In \(self.classForCoder).startDownload for \(indexPath.row) and cellIdentifier: \(photoDetails.identifier)")
+                    return
+                }
+                let downloader = RVImageDownloader(photoRecord: photoDetails)
+                downloader.completionBlock = {
+                   // print("In \(self.classForCoder).startDownload for \(indexPath.row) and cellIdentifier: \(photoDetails.identifier)  * IN COMPLETION BLOCK")
+                    if downloader.isCancelled { return }
+                    DispatchQueue.main.async {
+                        if let _ = self.pendingOperations.downloadsInProgress.removeValue(forKey: photoDetails.identifier) {
+                            self.tableView.reloadRows(at: [indexPath], with: .fade)
+                        } else {
+                            print("In \(self.classForCoder).startDownload, failed to remove photoRecord with identifier: \(photoDetails.identifier)")
+                        }
+                    }
+                }
+                pendingOperations.downloadsInProgress[photoDetails.identifier] = downloader
+                pendingOperations.downloadQueue.addOperation(downloader)
+
+
+        
+    }
+    func startFiltrationForRecord(photoDetails: RVPhotoRecord, indexPath: IndexPath) {
+        //print("in \(self.classForCoder).startFiltration for \(indexPath.row)")
+        if let cell = self.tableView.cellForRow(at: indexPath) as? RVTableViewCell {
+    
+                if let _ = pendingOperations.filtrationsInProgress[photoDetails.identifier] { return }
+                let filterer = RVImageFiltration(photoRecord: photoDetails)
+                filterer.completionBlock = {
+                    if filterer.isCancelled { return }
+                    DispatchQueue.main.async {
+                        if let _ = self.pendingOperations.filtrationsInProgress.removeValue(forKey: photoDetails.identifier) {
+                            self.tableView.reloadRows(at: [indexPath], with: .fade)
+                        } else {
+                            print("In \(self.classForCoder).startFilterations, failed to remove photoRecord with identifier: \(photoDetails.identifier)")
+                        }
+                    }
+                }
+                pendingOperations.filtrationsInProgress[photoDetails.identifier] = filterer
+                pendingOperations.filtrationQueue.addOperation(filterer)
+
+        } else {
+            print("In \(self.classForCoder).startFiltration, cell did not cast row \(indexPath.row)")
+        }
+        
+    }
+    
   func applySepiaFilter(_ image:UIImage) -> UIImage? {
     let inputImage = CIImage(data:UIImagePNGRepresentation(image)!)
     let context = CIContext(options:nil)
