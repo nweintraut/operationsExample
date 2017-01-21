@@ -10,7 +10,7 @@ import UIKit
 import CoreImage
 
 let dataSourceURL = URL(string:"http://www.raywenderlich.com/downloads/ClassicPhotosDictionary.plist")
-
+private var myContext = 0
 class ListViewController: UITableViewController {
   
  // lazy var photos = NSDictionary(contentsOf:dataSourceURL!)!
@@ -107,6 +107,8 @@ class ListViewController: UITableViewController {
         return UITableViewCell()
     }
   }
+    
+
   
     func startOperationsForPhotoRecord(photoDetails: RVPhotoRecord, indexPath: IndexPath) {
         switch(photoDetails.state) {
@@ -118,6 +120,30 @@ class ListViewController: UITableViewController {
             print("In\(self.classForCoder).start, do nothing for row \(indexPath.row)")
         }
         
+    }
+
+    var count = 0
+    func testObserver(operation: Operation) {
+            if count == 0 {
+                count = 1
+                operation.addObserver(self, forKeyPath: "isFinished", options: .new, context: &myContext)
+            }
+            
+    
+        
+    }
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if context == &myContext {
+            let path = (keyPath != nil) ? keyPath! : "noKeyPath"
+            if let object = object as? Operation {
+                if let change = change {
+                    print("In \(self.classForCoder).observer of \(path) for operation \(object) with change: \(change[NSKeyValueChangeKey.newKey])")
+                }
+                
+            }
+            
+        }
+        print("GOt something else")
     }
     func startDownloadForRecord(photoDetails: RVPhotoRecord, indexPath: IndexPath) {
 
@@ -141,7 +167,7 @@ class ListViewController: UITableViewController {
                 pendingOperations.downloadsInProgress[photoDetails.identifier] = downloader
                 pendingOperations.downloadQueue.addOperation(downloader)
 
-
+                testObserver(operation: downloader)
         
     }
     func startFiltrationForRecord(photoDetails: RVPhotoRecord, indexPath: IndexPath) {

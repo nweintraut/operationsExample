@@ -10,6 +10,7 @@ import UIKit
 class RVTableViewCell: UITableViewCell {
 
     var photoRecord: RVPhotoRecord? = nil
+    var operation: Operation? = nil
     
     func configure() {
         if let record = photoRecord {
@@ -70,6 +71,7 @@ class RVTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         self.photoRecord = nil
+        self.operation = nil
         super.prepareForReuse()
     }
 }
